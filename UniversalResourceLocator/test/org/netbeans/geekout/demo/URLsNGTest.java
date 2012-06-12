@@ -23,9 +23,12 @@
  */
 package org.netbeans.geekout.demo;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import org.openide.util.test.AnnotationProcessorTestUtils;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -55,6 +58,30 @@ public class URLsNGTest {
         InputStream is = u.openStream();
         String res = readFully(is);
         assertEquals(res, "Hi Jarda!", "Greeting is OK");
+    }
+    
+    @Test
+    public void testClassMustBePublic() throws IOException {
+        File dir = AnnotationProcessorTestUtils.findEmptyDir();
+        String code = 
+            "import java.net.URLStreamHandlerFactory;\n"
+            + "import java.net.URLStreamHandler;\n"
+            + "import org.netbeans.geekout.demo.URLProtocolRegistration;\n"
+            + "@URLProtocolRegistration(protocol=\"xyz\")\n"
+            + "class NoPublic implements URLStreamHandlerFactory {\n"
+            + "  public URLStreamHandler createURLStreamHandler(String protocol) "
+            + "{ return null; }\n"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(dir, "test.NoPublic", code);
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(dir, null, dir, null, os);
+        
+        assertFalse(res, "compilation has to fail");
+        String msg = os.toString();
+        if (!msg.contains("has to be public")) {
+            fail("Message should complain about not being public:\n" + msg);
+        }
     }
 
     private String readFully(InputStream is) throws IOException {
