@@ -21,21 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.geekout.demo;
+package org.netbeans.geekout.demo.impl;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.net.URLStreamHandlerFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import org.netbeans.geekout.demo.URLProtocolRegistration;
 
-/** Put this annotation on your own implementation of {@link URLStreamHandlerFactory}.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-@Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-public @interface URLProtocolRegistration {
-    /** The protocol the factory can handle */
-    String[] protocol();
+*/
+public class Geeks {
+    @URLProtocolRegistration(protocol="geekahoj")
+    public static InputStream sayAhoj(URL url) throws UnsupportedEncodingException {
+        String msg = "Ahoj " + url.getHost() + "!";
+        return new ByteArrayInputStream(msg.getBytes("UTF-8"));
+    }
 }

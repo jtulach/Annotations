@@ -24,7 +24,10 @@
 package org.netbeans.geekout.demo.processor;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -39,6 +42,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
+import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.geekout.demo.URLProtocolRegistration;
 import org.openide.util.lookup.ServiceProvider;
@@ -63,6 +67,12 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
                     Diagnostic.Kind.ERROR, "Class has to be public", e
                 );
             }
+            if (e.getKind() == ElementKind.METHOD) {
+                generateWrapperAroundMethod(e, roundEnv);
+                continue;
+            }
+            
+            
             if (!processingEnv.getTypeUtils().isAssignable(e.asType(), factoryType)) {
                 if (!processingEnv.getTypeUtils().isAssignable(e.asType(), connType)) {
                     processingEnv.getMessager().printMessage(
@@ -99,11 +109,59 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
                     res.openWriter().append(binaryName).append("\n").close();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, ex.getMessage(), e);
             }
         }
         return true;
+    }
+
+    private void generateWrapperAroundMethod(Element e, RoundEnvironment roundEnv) {
+        String methodName = e.getSimpleName().toString();
+        String binaryName = e.getEnclosingElement().getSimpleName().toString();
+        String packageName = processingEnv.getElementUtils().getPackageOf(e).getQualifiedName().toString();
+        URLProtocolRegistration upr = e.getAnnotation(URLProtocolRegistration.class);
+        for (String p : upr.protocol()) {
+            try {
+                String clsName = binaryName + "$url$" + p;
+                JavaFileObject wraper = processingEnv.getFiler().createSourceFile(packageName + '.' + clsName, e);
+                Writer w = wraper.openWriter();
+                String code = 
+                        "package " + packageName + ";\n"
+                        + "\n"
+                        + "import java.io.IOException;\n"
+                        + "import java.io.InputStream;\n"
+                        + "import java.io.UnsupportedEncodingException;\n"
+                        + "import java.net.URL;\n"
+                        + "import java.net.URLConnection;\n"
+                        + "import org.netbeans.geekout.demo.URLProtocolRegistration;\n"
+                        + "\n"
+                        + "@URLProtocolRegistration(protocol=\"" + p + "\")\n"
+                        + "public class " + clsName + " extends URLConnection {\n"
+                        + "    private final InputStream is;\n"
+                        + "\n"
+                        + "    public " + clsName + "(URL url) throws Exception {\n"
+                        + "        super(url);\n"
+                        + "        is = " + binaryName + "." + methodName + "(url);\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    @Override\n"
+                        + "    public void connect() throws IOException {\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    @Override\n"
+                        + "    public InputStream getInputStream() throws IOException {\n"
+                        + "        return is;\n"
+                        + "    }\n"
+                        + "}\n"
+                        + "";
+                w.append(code);
+                w.close();
+            } catch (IOException ex) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, ex.getMessage(), e);
+            }
+            
+        }
+        
     }
     
 }
