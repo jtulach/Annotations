@@ -59,6 +59,13 @@ public class URLsNGTest {
         String res = readFully(is);
         assertEquals(res, "Hi Jarda!", "Greeting is OK");
     }
+    @Test
+    public void testGeekCiaoProtocol() throws Exception {
+        URL u = new URL("geekciao://Jarda");
+        InputStream is = u.openStream();
+        String res = readFully(is);
+        assertEquals(res, "Ciao Jarda!", "Greeting is OK");
+    }
     
     @Test
     public void testClassMustBePublic() throws IOException {

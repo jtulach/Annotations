@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
@@ -74,13 +75,17 @@ final class GlobalProxyFactory implements URLStreamHandlerFactory {
                     if (line.startsWith("#")) {
                         continue;
                     }
-                    Object instance = Class.forName(line).newInstance();
-                    if (instance instanceof URLStreamHandlerFactory) {
+                    final Class<?> implClass = Class.forName(line);
+                    if (URLStreamHandlerFactory.class.isAssignableFrom(implClass)) {
+                        Object instance = implClass.newInstance();
                         URLStreamHandlerFactory f = (URLStreamHandlerFactory)instance;
                         URLStreamHandler handler = f.createURLStreamHandler(protocol);
                         if (handler != null) {
                             return handler;
                         }
+                    }
+                    if (URLConnection.class.isAssignableFrom(implClass)) {
+                        return new GenericHandler(implClass.asSubclass(URLConnection.class));
                     }
                 }
             }

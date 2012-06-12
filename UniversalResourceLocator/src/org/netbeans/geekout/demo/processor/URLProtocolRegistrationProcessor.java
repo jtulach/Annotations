@@ -53,6 +53,7 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         TypeMirror factoryType = processingEnv.getElementUtils().getTypeElement("java.net.URLStreamHandlerFactory").asType();
+        TypeMirror connType = processingEnv.getElementUtils().getTypeElement("java.net.URLConnection").asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(URLProtocolRegistration.class)) {
             if (!e.getModifiers().contains(Modifier.PUBLIC)) {
                 processingEnv.getMessager().printMessage(
@@ -60,9 +61,11 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
                 );
             }
             if (!processingEnv.getTypeUtils().isAssignable(e.asType(), factoryType)) {
-                processingEnv.getMessager().printMessage(
-                    Diagnostic.Kind.ERROR, "Has to implement URLStreamHandlerFactory", e
-                );
+                if (!processingEnv.getTypeUtils().isAssignable(e.asType(), connType)) {
+                    processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.ERROR, "Has to implement URLStreamHandlerFactory or URLConnection", e
+                    );
+                }
             }
             
             try {
