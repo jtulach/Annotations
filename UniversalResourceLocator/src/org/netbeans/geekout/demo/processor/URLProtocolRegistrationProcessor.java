@@ -25,15 +25,19 @@ package org.netbeans.geekout.demo.processor;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Completion;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -163,5 +167,43 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
         }
         
     }
+
+    @Override
+    public Iterable<? extends Completion> getCompletions(
+        Element element, AnnotationMirror annotation, 
+        ExecutableElement member, String userText
+    ) {
+        final String nm = member.getSimpleName().toString();
+//        System.err.println("  strn: " + nm);
+//        System.err.println("user: " + userText);
+        if (nm.equals("protocol")) {
+            List<MyCmpl> arr = Arrays.asList(new MyCmpl[] { 
+                new MyCmpl("http"),
+                new MyCmpl("ftp"),
+                new MyCmpl("file")
+            });
+//            System.err.println("array out: " + arr);
+            return arr;
+        }
+        return super.getCompletions(element, annotation, member, userText);
+    }
     
+    private static final class MyCmpl implements Completion {
+        private final String protocol;
+
+        public MyCmpl(String protocol) {
+            this.protocol = protocol;
+        }
+
+        @Override
+        public String getValue() {
+            return '"' + protocol ;
+        }
+
+        @Override
+        public String getMessage() {
+            return "Your favorite protocol: " + protocol;
+        }
+    
+    }
 }
