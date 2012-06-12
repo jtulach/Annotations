@@ -34,6 +34,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -51,10 +52,16 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        TypeMirror factoryType = processingEnv.getElementUtils().getTypeElement("java.net.URLStreamHandlerFactory").asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(URLProtocolRegistration.class)) {
             if (!e.getModifiers().contains(Modifier.PUBLIC)) {
                 processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR, "Class has to be public", e
+                );
+            }
+            if (!processingEnv.getTypeUtils().isAssignable(e.asType(), factoryType)) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, "Has to implement URLStreamHandlerFactory", e
                 );
             }
             

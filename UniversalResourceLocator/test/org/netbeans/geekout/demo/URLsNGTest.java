@@ -83,6 +83,29 @@ public class URLsNGTest {
             fail("Message should complain about not being public:\n" + msg);
         }
     }
+    
+    @Test
+    public void testClassMustExtendURLStreamHandlerFactory() throws IOException {
+        File dir = AnnotationProcessorTestUtils.findEmptyDir();
+        String code = 
+            "import java.net.URLStreamHandlerFactory;\n"
+            + "import java.net.URLStreamHandler;\n"
+            + "import org.netbeans.geekout.demo.URLProtocolRegistration;\n"
+            + "@URLProtocolRegistration(protocol=\"xyz\")\n"
+            + "public class NoFactory implements Runnable {\n"
+            + "  public void run() { }\n"
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(dir, "test.NoFactory", code);
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(dir, null, dir, null, os);
+        
+        assertFalse(res, "compilation has to fail");
+        String msg = os.toString();
+        if (!msg.contains("to implement URLStreamHandlerFactory")) {
+            fail("Message should complain about not implementing URLStreamHandlerFactory:\n" + msg);
+        }
+    }
 
     private String readFully(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
