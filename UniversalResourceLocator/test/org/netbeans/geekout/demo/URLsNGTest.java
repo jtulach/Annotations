@@ -43,11 +43,18 @@ public class URLsNGTest {
     }
     
     @Test
-    public void testGeekProtocol() throws Exception {
+    public void testGeekoutProtocol() throws Exception {
         URL u = new URL("geekout://Jarda");
         InputStream is = u.openStream();
         String res = readFully(is);
-        assertEquals(res, "Hello Jarda!", "Greetings are OK");
+        assertEquals(res, "Hello Jarda!", "Greeting is OK");
+    }
+    @Test
+    public void testGeekHiProtocol() throws Exception {
+        URL u = new URL("geekhi://Jarda");
+        InputStream is = u.openStream();
+        String res = readFully(is);
+        assertEquals(res, "Hi Jarda!", "Greeting is OK");
     }
 
     private String readFully(InputStream is) throws IOException {

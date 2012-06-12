@@ -36,12 +36,12 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
+*/
 @ServiceProvider(service=URLStreamHandlerFactory.class)
-public final class GeekoutProtocolFactory implements URLStreamHandlerFactory {
+public final class GeekhiProtocolFactory implements URLStreamHandlerFactory {
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
-        if ("geekout".equals(protocol)) {
+        if ("geekhi".equals(protocol)) {
             return new GeekoutHandler();
         }
         return null;
@@ -63,7 +63,7 @@ public final class GeekoutProtocolFactory implements URLStreamHandlerFactory {
         
         public GeekOutConnection(URL url) throws UnsupportedEncodingException {
             super(url);
-            String msg = "Hello " + url.getHost() + "!";
+            String msg = "Hi " + url.getHost() + "!";
             is = new ByteArrayInputStream(msg.getBytes("UTF-8"));
         }
 
