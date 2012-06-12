@@ -23,9 +23,18 @@
  */
 package org.netbeans.geekout.demo;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,6 +47,10 @@ final class GlobalProxyFactory implements URLStreamHandlerFactory {
 
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
+        URLStreamHandler res = seekInProtocols(protocol);
+        if (res != null) {
+            return res;
+        }
         return seekInServices(protocol);
     }
 
@@ -50,6 +63,46 @@ final class GlobalProxyFactory implements URLStreamHandlerFactory {
             }
         }
         return null;
+    }
+
+    private URLStreamHandler seekInProtocols(String protocol) {
+        try {
+            Enumeration<URL> urls = GlobalProxyFactory.class.getClassLoader().getResources("META-INF/urls/" + protocol);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                for (String line : lines(url)) {
+                    if (line.startsWith("#")) {
+                        continue;
+                    }
+                    Object instance = Class.forName(line).newInstance();
+                    if (instance instanceof URLStreamHandlerFactory) {
+                        URLStreamHandlerFactory f = (URLStreamHandlerFactory)instance;
+                        URLStreamHandler handler = f.createURLStreamHandler(protocol);
+                        if (handler != null) {
+                            return handler;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(GlobalProxyFactory.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    private Iterable<String> lines(URL url) throws IOException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()));
+        List<String> arr = new ArrayList<String>();
+        for (;;) {
+            String l = r.readLine();
+            if (l == null) {
+                return arr;
+            }
+            l = l.trim();
+            if (!l.isEmpty()) {
+                arr.add(l);
+            }
+        }
     }
     
 }

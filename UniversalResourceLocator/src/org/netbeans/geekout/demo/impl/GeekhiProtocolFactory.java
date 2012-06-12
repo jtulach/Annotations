@@ -37,7 +37,6 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
 */
-@ServiceProvider(service=URLStreamHandlerFactory.class)
 public final class GeekhiProtocolFactory implements URLStreamHandlerFactory {
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
