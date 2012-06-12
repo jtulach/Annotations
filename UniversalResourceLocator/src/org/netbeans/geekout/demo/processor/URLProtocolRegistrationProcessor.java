@@ -49,6 +49,7 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.geekout.demo.URLProtocolRegistration;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -201,8 +202,12 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
         }
 
         @Override
+        @NbBundle.Messages({
+            "# {0} - name of the URL protocol",
+            "MSG_GENERATE_PROTOCOL=Your favorite protocol {0}"
+        })
         public String getMessage() {
-            return "Your favorite protocol: " + protocol;
+            return Bundle.MSG_GENERATE_PROTOCOL(protocol);
         }
     
     }
