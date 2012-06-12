@@ -31,12 +31,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import org.netbeans.geekout.demo.URLProtocolRegistration;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
 */
+@URLProtocolRegistration(protocol="geekhi")
 public final class GeekhiProtocolFactory implements URLStreamHandlerFactory {
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
