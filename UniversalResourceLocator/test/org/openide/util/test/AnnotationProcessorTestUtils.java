@@ -71,6 +71,16 @@ public class AnnotationProcessorTestUtils {
 
     private AnnotationProcessorTestUtils() {}
 
+    /** Finds a directory for a test run */
+    public static File findEmptyDir() throws IOException {
+        File f = File.createTempFile("empty", ".dir");
+        f.delete();
+        if (f.mkdirs()) {
+            return f;
+        }
+        throw new IOException("Cannot create directory " + f);
+    }
+    
     /**
      * Create a source file.
      * @param dir source root
