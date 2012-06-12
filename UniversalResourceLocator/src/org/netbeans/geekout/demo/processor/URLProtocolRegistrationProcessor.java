@@ -32,6 +32,8 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -54,6 +56,7 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         TypeMirror factoryType = processingEnv.getElementUtils().getTypeElement("java.net.URLStreamHandlerFactory").asType();
         TypeMirror connType = processingEnv.getElementUtils().getTypeElement("java.net.URLConnection").asType();
+        TypeMirror urlType = processingEnv.getElementUtils().getTypeElement("java.net.URL").asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(URLProtocolRegistration.class)) {
             if (!e.getModifiers().contains(Modifier.PUBLIC)) {
                 processingEnv.getMessager().printMessage(
@@ -65,6 +68,23 @@ public class URLProtocolRegistrationProcessor extends AbstractProcessor {
                     processingEnv.getMessager().printMessage(
                         Diagnostic.Kind.ERROR, "Has to implement URLStreamHandlerFactory or URLConnection", e
                     );
+                } else {
+                    boolean found = false;
+                    for (Element c : e.getEnclosedElements()) {
+                        if (ElementKind.CONSTRUCTOR != c.getKind()) {
+                            continue;
+                        }
+                        ExecutableElement ee = (ExecutableElement)c;
+                        if (ee.getParameters().size() == 1 && ee.getParameters().get(0).asType() == urlType) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.ERROR, "Must have constructor with URL parameter", e
+                        );
+                    }
                 }
             }
             

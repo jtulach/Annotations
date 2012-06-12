@@ -113,6 +113,35 @@ public class URLsNGTest {
             fail("Message should complain about not implementing URLStreamHandlerFactory:\n" + msg);
         }
     }
+    
+    @Test
+    public void testMustHaveRightConstructor() throws IOException {
+        File dir = AnnotationProcessorTestUtils.findEmptyDir();
+        String code = 
+            "import java.net.URLConnection;\n"
+            + "import java.net.URL;\n"
+            + "import org.netbeans.geekout.demo.URLProtocolRegistration;\n"
+            + "@URLProtocolRegistration(protocol=\"xyz\")\n"
+            + "public class WrongConstructor extends URLConnection {\n    "
+            + "public WrongConstructor(URL url, boolean arg) throws java.io.IOException {\n"
+            + "        super(url);\n"
+            + "    }\n"
+            + "    @Override\n"
+            + "    public void connect() throws java.io.IOException {\n"
+            + "    }\n"
+            + ""
+            + "}\n";
+        AnnotationProcessorTestUtils.makeSource(dir, "test.WrongConstructor", code);
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(dir, null, dir, null, os);
+        
+        assertFalse(res, "compilation has to fail");
+        String msg = os.toString();
+        if (!msg.contains("constructor with URL")) {
+            fail("Message should complain about wrong constructor:\n" + msg);
+        }
+    }
 
     private String readFully(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
