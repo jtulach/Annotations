@@ -48,6 +48,10 @@ final class GlobalProxyFactory implements URLStreamHandlerFactory {
 
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
+        if (protocol.equals("file") || protocol.equals("jar")) {
+            return null;
+        }
+        
         URLStreamHandler res = seekInProtocols(protocol);
         if (res != null) {
             return res;
