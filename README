@@ -1,0 +1,5 @@
+This is a sample project demonstrating usefulness of compile time annotations on creating 
+<code>URLStreamHandlerFactory</code> ready for modular usage. Declaratively registered, scalable,
+and simple to write.
+
+Read more at http://wiki.apidesign.org/wiki/Annotations
